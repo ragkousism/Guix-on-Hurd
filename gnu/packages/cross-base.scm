@@ -167,30 +167,47 @@ may be either a libc package or #f.)"
               `(alist-cons-before
                 'configure 'set-cross-path
                 (lambda* (#:key inputs #:allow-other-keys)
-                  ;; Add the cross Linux headers to CROSS_CPATH, and remove them
+                  ;; Add the cross kernel headers to CROSS_CPATH, and remove them
                   ;; from CPATH.
                   (let ((libc  (assoc-ref inputs "libc"))
-                        (linux (assoc-ref inputs "xlinux-headers")))
+                        (linux (assoc-ref inputs
+                                          "xlinux-headers"))
+                        (mach  (assoc-ref inputs
+                                          "libc/cross-gnumach-headers"))
+                        (hurd  (assoc-ref inputs
+                                          "libc/cross-hurd-headers"))
+                        (hurd-minimal (assoc-ref inputs
+                                                 "libc/cross-hurd-minimal")))
                     (define (cross? x)
                       ;; Return #t if X is a cross-libc or cross Linux.
                       (or (string-prefix? libc x)
-                          (string-prefix? linux x)))
+                          (if linux        (string-prefix? linux x) #f)
+                          (if hurd         (string-prefix? hurd  x) #f)
+                          (if mach         (string-prefix? mach  x) #f)
+                          (if hurd-minimal (string-prefix? hurd-minimal x) #f)))
 
                     (setenv "CROSS_CPATH"
-                            (string-append libc "/include:"
-                                           linux "/include"))
+                            (string-append libc "/include"
+                             (if linux
+                                 (string-append ":" linux "/include")
+                                 "")
+                             (if hurd
+                                 (string-append ":" hurd  "/include"
+                                                ":" mach  "/include")
+                                 "")))
                     (setenv "CROSS_LIBRARY_PATH"
-                            (string-append libc "/lib"))
+                            (string-append libc "/lib"
+                             (if hurd-minimal
+                                 (string-append ":" hurd-minimal "/lib")
+                                 "")))
 
                     (let ((cpath   (search-path-as-string->list
-                                    (getenv "C_INCLUDE_PATH")))
+                                    (getenv "CPATH")))
                           (libpath (search-path-as-string->list
                                     (getenv "LIBRARY_PATH"))))
                       (setenv "CPATH"
                               (list->search-path-as-string
                                (remove cross? cpath) ":"))
-                      (for-each unsetenv
-                                '("C_INCLUDE_PATH" "CPLUS_INCLUDE_PATH"))
                       (setenv "LIBRARY_PATH"
                               (list->search-path-as-string
                                (remove cross? libpath) ":"))
