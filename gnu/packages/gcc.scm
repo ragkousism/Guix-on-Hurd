@@ -215,6 +215,13 @@ where the OS part is overloaded to denote a specific ABI---into GCC
                            suffix
                            (string-append libc ,(glibc-dynamic-linker)))))
 
+                (substitute* (find-files "gcc/config"
+                                         "^gnu(64|-elf)?\\.h$")
+                  (("#define GNU_USER_DYNAMIC_LINKER([^ ]*).*$" _ suffix)
+                   (format #f "#define GNU_USER_DYNAMIC_LINKER~a \"~a\"~%"
+                           suffix
+                           (string-append libc ,(glibc-dynamic-linker)))))
+
                 ;; Tell where to find libstdc++, libc, and `?crt*.o', except
                 ;; `crt{begin,end}.o', which come with GCC.
                 (substitute* (find-files "gcc/config"
