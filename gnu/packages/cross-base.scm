@@ -24,6 +24,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages hurd)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix utils)
@@ -296,44 +297,155 @@ XBINUTILS and the cross tool chain."
                        ("cross-binutils" ,xbinutils)
                        ,@(package-native-inputs linux-libre-headers)))))
 
-  (package (inherit glibc)
-    (name (string-append "glibc-cross-" target))
-    (arguments
-     (substitute-keyword-arguments
-         `(;; Disable stripping (see above.)
-           #:strip-binaries? #f
+  (define xgnumach-headers
+    (package (inherit gnumach-headers)
+      (name (string-append (package-name gnumach-headers)
+                           "-cross-" target))
 
-           ;; This package is used as a target input, but it should not have
-           ;; the usual cross-compilation inputs since that would include
-           ;; itself.
-           #:implicit-cross-inputs? #f
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ,@(package-native-inputs gnumach-headers)))))
 
-           ,@(package-arguments glibc))
-       ((#:configure-flags flags)
-        `(cons ,(string-append "--host=" target)
-               ,flags))
-       ((#:phases phases)
-        `(alist-cons-before
-          'configure 'set-cross-linux-headers-path
-          (lambda* (#:key inputs #:allow-other-keys)
-            (let ((linux (assoc-ref inputs "linux-headers")))
-              (setenv "CROSS_CPATH"
-                      (string-append linux "/include"))
-              #t))
-          ,phases))))
+  (define xmig
+    (package (inherit mig)
+      (name (string-append "mig-cross"))
+      (arguments
+       (substitute-keyword-arguments (package-arguments mig)
+         ((#:configure-flags flags)
+          `(cons ,(string-append "--host=" target)
+                 ,flags))))
 
-    ;; Shadow the native "linux-headers" because glibc's recipe expects the
-    ;; "linux-headers" input to point to the right thing.
-    (propagated-inputs `(("linux-headers" ,xlinux-headers)))
+      (propagated-inputs `(("cross-gnumach-headers" ,xgnumach-headers)))
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ,@(package-native-inputs mig)))))
 
-    ;; FIXME: 'static-bash' should really be an input, not a native input, but
-    ;; to do that will require building an intermediate cross libc.
-    (inputs '())
+  (define xhurd-headers
+    (package (inherit hurd-headers)
+      (name (string-append (package-name hurd-headers)
+                           "-cross-" target))
 
-    (native-inputs `(("cross-gcc" ,xgcc)
-                     ("cross-binutils" ,xbinutils)
-                     ,@(package-inputs glibc)     ;FIXME: static-bash
-                     ,@(package-native-inputs glibc)))))
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ("cross-mig" ,xmig)
+                       ,@(alist-delete "mig"(package-native-inputs hurd-headers))))))
+
+  (define xglibc/hurd-headers
+    (package (inherit glibc/hurd-headers)
+      (name (string-append (package-name glibc/hurd-headers)
+                           "-cross-" target))
+
+      (arguments
+       (substitute-keyword-arguments (package-arguments glibc/hurd-headers)
+         ((#:phases phases)
+          `(alist-cons-before
+            'pre-configure 'set-cross-headers-path
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((mach (assoc-ref inputs "gnumach-headers"))
+                    (hurd (assoc-ref inputs "hurd-headers")))
+                (setenv "CROSS_CPATH"
+                        (string-append mach "/include:"
+                                       hurd "/include"))))
+            ,phases))))
+
+      (propagated-inputs `(("gnumach-headers" ,xgnumach-headers)
+                           ("hurd-headers" ,xhurd-headers)))
+
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ("cross-mig" ,xmig)
+                       ,@(alist-delete "mig"(package-native-inputs glibc/hurd-headers))))))
+
+  (define xhurd-minimal
+    (package (inherit hurd-minimal)
+      (name (string-append (package-name hurd-minimal)
+                           "-cross-" target))
+      (arguments
+       (substitute-keyword-arguments (package-arguments hurd-minimal)
+         ((#:phases phases)
+          `(alist-cons-before
+            'configure 'set-cross-headers-path
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((glibc-headers (assoc-ref inputs "cross-glibc-hurd-headers")))
+                (setenv "CROSS_CPATH"
+                        (string-append glibc-headers "/include:"))))
+            ,phases))))
+
+      (inputs `(("cross-glibc-hurd-headers" ,xglibc/hurd-headers)))
+
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ("cross-mig" ,xmig)
+                       ,@(alist-delete "mig"(package-native-inputs hurd-minimal))))))
+
+  ;; Choose libc based on target
+  (match target
+    ("i686-pc-gnu"
+     (package (inherit glibc/hurd)
+       (name (string-append "glibc-hurd-cross-" target))
+       (arguments
+        (substitute-keyword-arguments (package-arguments glibc/hurd)
+          ((#:phases phases)
+           `(alist-cons-before
+             'pre-configure 'set-cross-hurd-headers-path
+             (lambda* (#:key inputs #:allow-other-keys)
+               (let ((mach (assoc-ref inputs "cross-gnumach-headers"))
+                     (hurd (assoc-ref inputs "cross-hurd-headers"))
+                     (hurd-minimal (assoc-ref inputs "cross-hurd-minimal")))
+                 (setenv "CROSS_CPATH"
+                         (string-append mach "/include:"
+                                        hurd "/include"))
+                 (setenv "CROSS_LIBRARY_PATH"
+                         (string-append hurd-minimal "/lib:"))))
+             ,phases))))
+
+       (propagated-inputs `(("cross-gnumach-headers" ,xgnumach-headers)
+                            ("cross-hurd-headers" ,xhurd-headers)
+                            ("cross-hurd-minimal" ,xhurd-minimal)))
+
+       (native-inputs `(("cross-gcc" ,xgcc)
+                        ("cross-binutils" ,xbinutils)
+                        ("cross-mig" ,xmig)
+                        ,@(alist-delete "mig"(package-native-inputs glibc/hurd))))))
+    (_
+     (package (inherit glibc)
+       (name (string-append "glibc-cross-" target))
+       (arguments
+        (substitute-keyword-arguments
+            `(;; Disable stripping (see above.)
+              #:strip-binaries? #f
+
+              ;; This package is used as a target input, but it should not have
+              ;; the usual cross-compilation inputs since that would include
+              ;; itself.
+              #:implicit-cross-inputs? #f
+
+              ,@(package-arguments glibc))
+          ((#:configure-flags flags)
+           `(cons ,(string-append "--host=" target)
+                  ,flags))
+          ((#:phases phases)
+           `(alist-cons-before
+             'configure 'set-cross-linux-headers-path
+             (lambda* (#:key inputs #:allow-other-keys)
+               (let ((linux (assoc-ref inputs "linux-headers")))
+                 (setenv "CROSS_CPATH"
+                         (string-append linux "/include"))
+                 #t))
+             ,phases))))
+
+       ;; Shadow the native "linux-headers" because glibc's recipe expect the
+       ;; "linux-headers" input to point to the right thing.
+       (propagated-inputs `(("linux-headers" ,xlinux-headers)))
+
+       ;; FIXME: 'static-bash' should really be an input, not a native input, but
+       ;; to do that will require building an intermediate cross libc.
+       (inputs '())
+
+       (native-inputs `(("cross-gcc" ,xgcc)
+                        ("cross-binutils" ,xbinutils)
+                        ,@(package-inputs glibc)     ;FIXME: static-bash
+                        ,@(package-native-inputs glibc)))))))
 
 
 ;;;
