@@ -27,6 +27,7 @@
   #:use-module (gnu packages perl)
   #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages pkg-config)
   #:use-module (guix git-download))
 
 (define-public gnumach-headers
@@ -53,9 +54,10 @@
                  %standard-phases))
 
       ;; GNU Mach supports only IA32 currently, so cheat so that we can at
-      ;; least install its headers.
-      #:configure-flags '("--build=i686-pc-gnu")
-
+      ;; least install its headers when not cross-compiling.
+      ,@(if (%current-target-system)
+          '()
+          '(#:configure-flags '("--build=i686-pc-gnu")))
       #:tests? #f))
     (home-page "https://www.gnu.org/software/hurd/microkernel/mach/gnumach.html")
     (synopsis "GNU Mach kernel headers")
