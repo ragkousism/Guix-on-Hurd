@@ -497,12 +497,12 @@ dist_patch_DATA =						\
   gnu/packages/patches/glib-tests-gapplication.patch		\
   gnu/packages/patches/glibc-CVE-2015-7547.patch		\
   gnu/packages/patches/glibc-bootstrap-system.patch		\
-  gnu/packages/patches/glibc-hurd-extern-inline.patch		\
   gnu/packages/patches/glibc-ldd-x86_64.patch			\
   gnu/packages/patches/glibc-locales.patch			\
   gnu/packages/patches/glibc-locale-incompatibility.patch	\
   gnu/packages/patches/glibc-o-largefile.patch			\
   gnu/packages/patches/glibc-versioned-locpath.patch		\
+  gnu/packages/patches/glibc-hurd-libs.patch			\
   gnu/packages/patches/gmp-arm-asm-nothumb.patch		\
   gnu/packages/patches/gmp-faulty-test.patch			\
   gnu/packages/patches/gnucash-price-quotes-perl.patch		\
@@ -597,7 +597,6 @@ dist_patch_DATA =						\
   gnu/packages/patches/libwmf-CVE-2015-4696.patch		\
   gnu/packages/patches/libxslt-CVE-2015-7995.patch		\
   gnu/packages/patches/lirc-localstatedir.patch			\
-  gnu/packages/patches/libpthread-glibc-preparation.patch	\
   gnu/packages/patches/lm-sensors-hwmon-attrs.patch		\
   gnu/packages/patches/lua-pkgconfig.patch                      \
   gnu/packages/patches/lua51-liblua-so.patch                    \

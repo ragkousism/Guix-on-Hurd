@@ -767,17 +767,16 @@ command.")
   ;; The Hurd's libc variant.
   (package (inherit glibc)
     (name "glibc-hurd")
-    (version "2.18")
+    (version "2.19")
     (source (origin
-              (method git-fetch)
-              (uri (git-reference
-                    (url "git://git.sv.gnu.org/hurd/glibc")
-                    (commit "cc94b3cfe65523f980359e5f0e93a26196bda1d3")))
+              (method url-fetch)
+              (uri (string-append "http://alpha.gnu.org/gnu/hurd/glibc-"
+                                  version "-hurd+libpthread-20150515" ".tar.gz"))
               (sha256
                (base32
-                "17gsh0kaz0zyvghjmx861mi2p65m9901lngi179x61zm6v2v3xc4"))
-              (file-name (string-append name "-" version))
-              (patches (search-patches "glibc-hurd-extern-inline.patch"))))
+                "0fkmn1kfsbhyrkf1wqqvc47dl5bzflnbcggjjfp5s9c489z916zw"))
+              (patches (list (search-patch "glibc-hurd-libs.patch")
+                             (search-patch "libpthread-remove-duplicate.patch")))))
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
     ;; so both should be propagated.
@@ -786,18 +785,8 @@ command.")
                          ("hurd-minimal" ,hurd-minimal)))
     (native-inputs
      `(,@(package-native-inputs glibc)
-       ("patch/libpthread-patch" ,(search-patch "libpthread-glibc-preparation.patch"))
        ("mig" ,mig)
-       ("perl" ,perl)
-       ("libpthread" ,(origin
-                        (method git-fetch)
-                        (uri (git-reference
-                              (url "git://git.sv.gnu.org/hurd/libpthread")
-                              (commit "0ef7b75c4ba91b6660f0d3d8b51d14d25e3d5bfb")))
-                        (sha256
-                         (base32
-                          "031py18fls15z0wprni33mf762kg6fx8xqijppimhp83yp6ky3l3"))
-                        (file-name "libpthread")))))
+       ("perl" ,perl)))
 
     (arguments
      (substitute-keyword-arguments (package-arguments glibc)
@@ -816,19 +805,7 @@ command.")
                          ;; "linux-headers" input, to prevent errors.
                          (let ((%build-inputs `(("linux-headers" . "@DUMMY@")
                                                 ,@%build-inputs)))
-                           ,original-configure-flags))))
-       ((#:phases phases)
-        `(alist-cons-after
-          'unpack 'prepare-libpthread
-          (lambda* (#:key inputs #:allow-other-keys)
-            (copy-recursively (assoc-ref inputs "libpthread") "libpthread")
-
-            (system* "patch" "--force" "-p1" "-i"
-                     (assoc-ref inputs "patch/libpthread-patch"))
-            #t)
-          ,phases))))
-    (synopsis "The GNU C Library (GNU Hurd variant)")
-    (supported-systems %hurd-systems)))
+                           ,original-configure-flags))))))))
 
 (define-public glibc/hurd-headers
   (package (inherit glibc/hurd)

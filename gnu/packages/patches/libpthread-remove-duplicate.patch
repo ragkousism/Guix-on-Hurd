@@ -1,0 +1,17 @@
+There is a definition of __libc_getspecific in libpthread that causes the
+build to fail. Remove it.
+--- a/libpthread/pthread/cthreads-compat.c
++++ b/libpthread/pthread/cthreads-compat.c
+@@ -70,12 +70,6 @@
+   return 0;
+ }
+ 
+-void *
+-__libc_getspecific (cthread_key_t key)
+-{
+-  return pthread_getspecific (key);
+-}
+-
+ int
+ cthread_setspecific (cthread_key_t key, void *val)
+ {
