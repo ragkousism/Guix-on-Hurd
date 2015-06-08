@@ -44,7 +44,9 @@
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
-  #:use-module (guix build-system trivial))
+  #:use-module (guix build-system trivial)
+  #:use-module (ice-9 match)
+  #:export (glibc))
 
 ;;; Commentary:
 ;;;
@@ -463,7 +465,7 @@ store.")
 
 (export make-ld-wrapper)
 
-(define-public glibc
+(define-public glibc/linux
   (package
    (name "glibc")
    (version "2.22")
@@ -648,16 +650,73 @@ with the Linux kernel.")
   ;; The old libc, which we use mostly to build locale data in the old format
   ;; (which the new libc can cope with.)
   (package
-    (inherit glibc)
+    (inherit glibc/linux)
     (version "2.21")
     (source (origin
-              (inherit (package-source glibc))
+              (inherit (package-source glibc/linux))
               (uri (string-append "mirror://gnu/glibc/glibc-"
                                   version ".tar.xz"))
               (sha256
                (base32
                 "1f135546j34s9bfkydmx2nhh9vwxlx60jldi80zmsnln6wj3dsxf"))
               (patches (search-patches "glibc-ldd-x86_64.patch"))))))
+
+(define-public glibc/hurd
+  (package (inherit glibc/linux)
+    (name "glibc-hurd")
+    (version "2.19")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "http://alpha.gnu.org/gnu/hurd/glibc-"
+                                  version "-hurd+libpthread-20150515" ".tar.gz"))
+              (sha256
+               (base32
+                "0fkmn1kfsbhyrkf1wqqvc47dl5bzflnbcggjjfp5s9c489z916zw"))
+              (patches (list (search-patch "glibc-hurd-libs.patch")
+                             (search-patch "libpthread-remove-duplicate.patch")))))
+
+    ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
+    ;; so both should be propagated.
+    (propagated-inputs `(("gnumach-headers" ,gnumach-headers)
+                         ("hurd-headers" ,hurd-headers)
+                         ("hurd-minimal" ,hurd-minimal)))
+    (native-inputs
+     `(,@(package-native-inputs glibc/linux)
+       ("mig" ,mig)
+       ("perl" ,perl)))
+
+    (arguments
+     (substitute-keyword-arguments (package-arguments glibc/linux)
+       ((#:configure-flags original-configure-flags)
+        `(append (list "--host=i686-pc-gnu"
+
+                       ;; nscd fails to build for GNU/Hurd:
+                       ;; <https://lists.gnu.org/archive/html/bug-hurd/2014-07/msg00006.html>.
+                       ;; Disable it.
+                       "--disable-nscd")
+                 (filter (lambda (flag)
+                           (not (or (string-prefix? "--with-headers=" flag)
+                                    (string-prefix? "--enable-kernel=" flag))))
+                         ;; Evaluate 'original-configure-flags' in a
+                         ;; lexical environment that has a dummy
+                         ;; "linux-headers" input, to prevent errors.
+                         (let ((%build-inputs `(("linux-headers" . "@DUMMY@")
+                                                ,@%build-inputs)))
+                           ,original-configure-flags))))))
+    (synopsis "The GNU C Library (GNU Hurd variant)")
+    (supported-systems %hurd-systems)))
+
+(define* (glibc-for-target #:optional
+                           (target (or (%current-target-system)
+                                       (%current-system))))
+  "Return the glibc for TARGET, GLIBC/LINUX for a Linux host or
+GLIBC/HURD for a Hurd host"
+  (match target
+    ("i686-pc-gnu" glibc/hurd)
+    (_ glibc/linux)))
+
+(define-syntax glibc
+  (identifier-syntax (glibc-for-target)))
 
 (define-public glibc-locales
   (package
@@ -762,50 +821,6 @@ test environments.")
 variety of options.  It is an alternative to the shell \"type\" built-in
 command.")
     (license gpl3+))) ; some files are under GPLv2+
-
-(define-public glibc/hurd
-  ;; The Hurd's libc variant.
-  (package (inherit glibc)
-    (name "glibc-hurd")
-    (version "2.19")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "http://alpha.gnu.org/gnu/hurd/glibc-"
-                                  version "-hurd+libpthread-20150515" ".tar.gz"))
-              (sha256
-               (base32
-                "0fkmn1kfsbhyrkf1wqqvc47dl5bzflnbcggjjfp5s9c489z916zw"))
-              (patches (list (search-patch "glibc-hurd-libs.patch")
-                             (search-patch "libpthread-remove-duplicate.patch")))))
-
-    ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
-    ;; so both should be propagated.
-    (propagated-inputs `(("gnumach-headers" ,gnumach-headers)
-                         ("hurd-headers" ,hurd-headers)
-                         ("hurd-minimal" ,hurd-minimal)))
-    (native-inputs
-     `(,@(package-native-inputs glibc)
-       ("mig" ,mig)
-       ("perl" ,perl)))
-
-    (arguments
-     (substitute-keyword-arguments (package-arguments glibc)
-       ((#:configure-flags original-configure-flags)
-        `(append (list "--host=i686-pc-gnu"
-
-                       ;; nscd fails to build for GNU/Hurd:
-                       ;; <https://lists.gnu.org/archive/html/bug-hurd/2014-07/msg00006.html>.
-                       ;; Disable it.
-                       "--disable-nscd")
-                 (filter (lambda (flag)
-                           (not (or (string-prefix? "--with-headers=" flag)
-                                    (string-prefix? "--enable-kernel=" flag))))
-                         ;; Evaluate 'original-configure-flags' in a
-                         ;; lexical environment that has a dummy
-                         ;; "linux-headers" input, to prevent errors.
-                         (let ((%build-inputs `(("linux-headers" . "@DUMMY@")
-                                                ,@%build-inputs)))
-                           ,original-configure-flags))))))))
 
 (define-public glibc/hurd-headers
   (package (inherit glibc/hurd)
