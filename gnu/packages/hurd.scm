@@ -21,6 +21,7 @@
   #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (gnu packages)
+  #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages bison)
@@ -125,10 +126,17 @@ communication.")
                            ;; that.
                            ,@(if (%current-target-system)
                                  '()
-                                 '("--build=i686-pc-gnu"))
+                                 '("--host=i686-pc-gnu"))
 
                            ;; Reduce set of dependencies.
-                           "--without-parted")
+                           "--disable-ncursesw"
+                           "--disable-test"
+                           "--without-libbz2"
+                           "--without-libz"
+                           "--without-parted"
+                           ;; Skip the clnt_create check because it expects
+                           ;; a working glibc causing a circular dependency.
+                           "ac_cv_search_clnt_create=no")
 
        #:tests? #f))
     (home-page "http://www.gnu.org/software/hurd/hurd.html")
@@ -147,42 +155,26 @@ Library and other user programs.")
        ("mig" ,mig)))
 
     (arguments
-     `(#:phases (alist-replace
-                 'install
-                 (lambda* (#:key outputs #:allow-other-keys)
-                   (let ((out (assoc-ref outputs "out")))
-                     ;; We need to copy libihash.a to the output directory manually,
-                     ;; since there is no target for that in the makefile.
-                     (mkdir-p (string-append out "/include"))
-                     (copy-file "libihash/ihash.h"
-                                (string-append out "/include/ihash.h"))
-                     (mkdir-p (string-append out "/lib"))
-                     (copy-file "libihash/libihash.a"
-                                (string-append out "/lib/libihash.a"))
-                     #t))
-                 (alist-replace
-                  'build
-                  (lambda _
-                    (zero? (system* "make" "-Clibihash" "libihash.a")))
-                  (alist-cons-before
-                   'configure 'bootstrap
-                   (lambda _
-                     (zero? (system* "autoreconf" "-vfi")))
-                   %standard-phases)))
-       #:configure-flags '(;; Pretend we're on GNU/Hurd; 'configure' wants
-                           ;; that.
-                           "--host=i686-pc-gnu"
-
-                           ;; Reduce set of dependencies.
-                           "--disable-ncursesw"
-                           "--disable-test"
-                           "--without-libbz2"
-                           "--without-libz"
-                           "--without-parted"
-                           ;; Skip the clnt_create check because it expects
-                           ;; a working glibc causing a circular dependency.
-                           "ac_cv_search_clnt_create=no")
-       #:tests? #f))
+     (substitute-keyword-arguments (package-arguments hurd-headers)
+       ((#:phases _)
+        '(alist-replace
+          'install
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let ((out (assoc-ref outputs "out")))
+              ;; We need to copy libihash.a to the output directory manually,
+              ;; since there is no target for that in the makefile.
+              (mkdir-p (string-append out "/include"))
+              (copy-file "libihash/ihash.h"
+                         (string-append out "/include/ihash.h"))
+              (mkdir-p (string-append out "/lib"))
+              (copy-file "libihash/libihash.a"
+                         (string-append out "/lib/libihash.a"))
+              #t))
+          (alist-replace
+           'build
+           (lambda _
+             (zero? (system* "make" "-Clibihash" "libihash.a")))
+           %standard-phases)))))
     (home-page "http://www.gnu.org/software/hurd/hurd.html")
     (synopsis "GNU Hurd libraries")
     (description

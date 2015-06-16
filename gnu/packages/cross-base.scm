@@ -327,10 +327,15 @@ XBINUTILS and the cross tool chain."
     (package (inherit mig)
       (name (string-append "mig-cross"))
       (arguments
-       (substitute-keyword-arguments (package-arguments mig)
-         ((#:configure-flags flags)
-          `(cons ,(string-append "--host=" target)
-                 ,flags))))
+       `(#:phases (alist-cons-before
+                   'configure 'set-cross-headers-path
+                   (lambda* (#:key inputs #:allow-other-keys)
+                     (let ((mach (assoc-ref inputs "cross-gnumach-headers")))
+                       (setenv "CROSS_CPATH"
+                               (string-append mach "/include"))))
+                   %standard-phases)
+         #:configure-flags (list ,(string-append "--target=" target))
+         ,@(package-arguments mig)))
 
       (propagated-inputs `(("cross-gnumach-headers" ,xgnumach-headers)))
       (native-inputs `(("cross-gcc" ,xgcc)
