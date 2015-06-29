@@ -58,7 +58,9 @@
       ;; least install its headers when not cross-compiling.
       ,@(if (%current-target-system)
           '()
-          '(#:configure-flags '("--build=i686-pc-gnu")))
+          ;; See <http://lists.gnu.org/archive/html/bug-hurd/2015-06/msg00042.html>
+          ;; <http://lists.gnu.org/archive/html/guix-devel/2015-06/msg00716.html>
+          '(#:configure-flags '("--build=i586-pc-gnu")))
       #:tests? #f))
     (home-page "https://www.gnu.org/software/hurd/microkernel/mach/gnumach.html")
     (synopsis "GNU Mach kernel headers")
@@ -126,7 +128,7 @@ communication.")
                            ;; that.
                            ,@(if (%current-target-system)
                                  '()
-                                 '("--host=i686-pc-gnu"))
+                                 '("--host=i586-pc-gnu"))
 
                            ;; Reduce set of dependencies.
                            "--disable-ncursesw"

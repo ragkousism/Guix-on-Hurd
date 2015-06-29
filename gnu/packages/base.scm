@@ -688,7 +688,10 @@ with the Linux kernel.")
     (arguments
      (substitute-keyword-arguments (package-arguments glibc/linux)
        ((#:configure-flags original-configure-flags)
-        `(append (list "--host=i686-pc-gnu"
+        `(append (list "--host=i586-pc-gnu"
+
+                       ;; We need this to get a working openpty() function.
+                       "--enable-pt_chown"
 
                        ;; nscd fails to build for GNU/Hurd:
                        ;; <https://lists.gnu.org/archive/html/bug-hurd/2014-07/msg00006.html>.
@@ -712,7 +715,7 @@ with the Linux kernel.")
   "Return the glibc for TARGET, GLIBC/LINUX for a Linux host or
 GLIBC/HURD for a Hurd host"
   (match target
-    ("i686-pc-gnu" glibc/hurd)
+    ("i586-pc-gnu" glibc/hurd)
     (_ glibc/linux)))
 
 (define-syntax glibc
@@ -833,7 +836,7 @@ command.")
        ;; We just pass the flags really needed to build the headers.
        ((#:configure-flags _)
         `(list "--enable-add-ons"
-               "--host=i686-pc-gnu"
+               "--host=i586-pc-gnu"
                "--enable-obsolete-rpc"))
        ((#:phases _)
         '(alist-replace

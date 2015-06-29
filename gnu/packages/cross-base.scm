@@ -402,7 +402,7 @@ XBINUTILS and the cross tool chain."
 
   ;; Choose libc based on target
   (match target
-    ("i686-pc-gnu"
+    ("i586-pc-gnu"
      (package (inherit glibc/hurd)
        (name (string-append "glibc-hurd-cross-" target))
        (arguments
