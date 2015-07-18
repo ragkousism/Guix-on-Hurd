@@ -102,6 +102,7 @@ MODULES =					\
   guix/build/emacs-utils.scm			\
   guix/build/graft.scm				\
   guix/build/bournish.scm			\
+  guix/build/make-bootstrap.scm			\
   guix/search-paths.scm				\
   guix/packages.scm				\
   guix/import/utils.scm				\
