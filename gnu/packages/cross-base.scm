@@ -227,6 +227,15 @@ may be either a libc package or #f.)"
   "Return a cross-compiler for TARGET, where TARGET is a GNU triplet.  Use
 XBINUTILS as the associated cross-Binutils.  If LIBC is false, then build a
 GCC that does not target a libc; otherwise, target that libc."
+  
+  (define (cross-kernel-headers target libc)
+    "Return headers depending on TARGET."
+    (match target
+      ("i586-pc-gnu"
+       (assoc-ref (package-propagated-inputs libc) "hurd-kernel-headers"))
+      (_
+       (assoc-ref (package-propagated-inputs libc) "linux-headers"))))
+  
   (package (inherit %xgcc)
     (name (string-append "gcc-cross-"
                          (if libc "" "sans-libc-")
@@ -268,9 +277,8 @@ GCC that does not target a libc; otherwise, target that libc."
                                (alist-delete "libc" %final-inputs))))
            (if libc
                `(("libc" ,libc)
-                 ("xlinux-headers"                ;the target headers
-                  ,@(assoc-ref (package-propagated-inputs libc)
-                               "linux-headers"))
+                 ("xkernel-headers"                ;the target headers
+                  ,@(cross-kernel-headers target libc))
                  ,@inputs)
                inputs))))
 
@@ -400,6 +408,19 @@ XBINUTILS and the cross tool chain."
                        ("cross-mig" ,xmig)
                        ,@(alist-delete "mig"(package-native-inputs hurd-minimal))))))
 
+  (define xhurd-kernel-headers
+    (package (inherit hurd-kernel-headers)
+      (name (string-append (package-name hurd-kernel-headers)
+                           "-cross-" target))
+
+      (inputs `(("gnumach-headers" ,xgnumach-headers)
+                ("hurd-headers" ,xhurd-headers)
+                ("hurd-minimal" ,xhurd-minimal)))
+
+      (native-inputs `(("cross-gcc" ,xgcc)
+                       ("cross-binutils" ,xbinutils)
+                       ,@(package-native-inputs hurd-kernel-headers)))))
+
   ;; Choose libc based on target
   (match target
     ("i586-pc-gnu"
@@ -411,19 +432,14 @@ XBINUTILS and the cross tool chain."
            `(alist-cons-before
              'pre-configure 'set-cross-hurd-headers-path
              (lambda* (#:key inputs #:allow-other-keys)
-               (let ((mach (assoc-ref inputs "cross-gnumach-headers"))
-                     (hurd (assoc-ref inputs "cross-hurd-headers"))
-                     (hurd-minimal (assoc-ref inputs "cross-hurd-minimal")))
+               (let ((kernel (assoc-ref inputs "hurd-kernel-headers")))
                  (setenv "CROSS_CPATH"
-                         (string-append mach "/include:"
-                                        hurd "/include"))
+                         (string-append kernel "/include"))
                  (setenv "CROSS_LIBRARY_PATH"
-                         (string-append hurd-minimal "/lib:"))))
+                         (string-append kernel "/lib:"))))
              ,phases))))
 
-       (propagated-inputs `(("cross-gnumach-headers" ,xgnumach-headers)
-                            ("cross-hurd-headers" ,xhurd-headers)
-                            ("cross-hurd-minimal" ,xhurd-minimal)))
+       (propagated-inputs `(("hurd-kernel-headers" ,xhurd-kernel-headers)))
 
        (native-inputs `(("cross-gcc" ,xgcc)
                         ("cross-binutils" ,xbinutils)
