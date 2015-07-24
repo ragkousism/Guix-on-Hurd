@@ -686,7 +686,19 @@ with the Linux kernel.")
 
     (arguments
      (substitute-keyword-arguments (package-arguments glibc/linux)
-       ((#:configure-flags original-configure-flags)
+       ((#:phases original-phases)
+        ;; Add libmachuser.so and libhurduser.so to libc.so's search path.
+        ;; See <http://lists.gnu.org/archive/html/bug-hurd/2015-07/msg00051.html>.
+        `(alist-cons-after
+          'install 'augment-libc.so
+          (lambda* (#:key outputs #:allow-other-keys)
+            (let* ((out (assoc-ref outputs "out")))
+              (substitute* (string-append out "/lib/libc.so")
+                (("/[^ ]+/lib/libc.so.0.3")
+                 (string-append out "/lib/libc.so.0.3" " libmachuser.so" " libhurduser.so"))))
+            #t)
+          ,original-phases))
+        ((#:configure-flags original-configure-flags)
         `(append (list "--host=i586-pc-gnu"
 
                        ;; We need this to get a working openpty() function.
