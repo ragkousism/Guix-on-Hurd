@@ -678,9 +678,7 @@ with the Linux kernel.")
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
     ;; so both should be propagated.
-    (propagated-inputs `(("gnumach-headers" ,gnumach-headers)
-                         ("hurd-headers" ,hurd-headers)
-                         ("hurd-minimal" ,hurd-minimal)))
+    (propagated-inputs `(("hurd-kernel-headers" ,hurd-kernel-headers)))
     (native-inputs
      `(,@(package-native-inputs glibc/linux)
        ("mig" ,mig)
