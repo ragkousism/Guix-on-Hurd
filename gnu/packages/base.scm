@@ -673,6 +673,7 @@ with the Linux kernel.")
                (base32
                 "0fkmn1kfsbhyrkf1wqqvc47dl5bzflnbcggjjfp5s9c489z916zw"))
               (patches (list (search-patch "glibc-hurd-libs.patch")
+                             (search-patch "glibc-hurd-disable-memmove-fix.patch")
                              (search-patch "libpthread-remove-duplicate.patch")))))
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
