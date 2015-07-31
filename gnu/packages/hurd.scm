@@ -23,6 +23,7 @@
   #:use-module (gnu packages)
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system trivial)
   #:use-module (gnu packages flex)
   #:use-module (gnu packages bison)
   #:use-module (gnu packages perl)
@@ -183,3 +184,28 @@ Library and other user programs.")
      "This package provides libihash, needed to build the GNU C
 Library for GNU/Hurd.")
     (license gpl2+)))
+
+(define-public hurd-kernel-headers
+  (package
+    (name "hurd-kernel-headers")
+    (version (package-version hurd-headers))
+    (source #f)
+    (build-system trivial-build-system)
+    (arguments
+     '(#:modules ((guix build union))
+       #:builder (begin
+                   (use-modules (ice-9 match)
+                                (guix build union))
+                   (match %build-inputs
+                     (((names . directories) ...)
+                      (union-build (assoc-ref %outputs "out")
+                                   directories))))))
+    (inputs `(("gnumach-headers" ,gnumach-headers)
+              ("hurd-headers" ,hurd-headers)
+              ("hurd-minimal" ,hurd-minimal)))
+    (synopsis "Union of the Hurd headers and libs")
+    (description
+     "A union of the Mach and Hurd headers and the Hurd-minimal package
+which are needed for both glibc and gcc")
+    (home-page (package-home-page hurd-headers))
+    (license (package-license hurd-headers))))
