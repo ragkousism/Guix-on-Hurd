@@ -668,14 +668,10 @@ with the Linux kernel.")
     (source (origin
               (method url-fetch)
               (uri (string-append "http://alpha.gnu.org/gnu/hurd/glibc-"
-                                  version "-hurd+libpthread-20150515" ".tar.gz"))
+                                  version "-hurd+libpthread-20151031" ".tar.gz"))
               (sha256
                (base32
-                "0fkmn1kfsbhyrkf1wqqvc47dl5bzflnbcggjjfp5s9c489z916zw"))
-              (patches (list (search-patch "glibc-hurd-libs.patch")
-                             (search-patch "glibc-hurd-disable-memmove-fix.patch")
-                             (search-patch "glibc-hurd-check-sysheaders.patch")
-                             (search-patch "libpthread-remove-duplicate.patch")))))
+                "1mpq4d25xplnzwhbbrjjp8bx6idybkmmvhhhj877305xgn4sgvhf"))))
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
     ;; so both should be propagated.

@@ -502,9 +502,6 @@ dist_patch_DATA =						\
   gnu/packages/patches/glibc-locale-incompatibility.patch	\
   gnu/packages/patches/glibc-o-largefile.patch			\
   gnu/packages/patches/glibc-versioned-locpath.patch		\
-  gnu/packages/patches/glibc-hurd-libs.patch			\
-  gnu/packages/patches/glibc-hurd-disable-memmove-fix.patch	\
-  gnu/packages/patches/glibc-hurd-check-sysheaders.patch	\
   gnu/packages/patches/gmp-arm-asm-nothumb.patch		\
   gnu/packages/patches/gmp-faulty-test.patch			\
   gnu/packages/patches/gnucash-price-quotes-perl.patch		\
