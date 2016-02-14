@@ -706,14 +706,8 @@ with the Linux kernel.")
                        ;; Disable it.
                        "--disable-nscd")
                  (filter (lambda (flag)
-                           (not (or (string-prefix? "--with-headers=" flag)
-                                    (string-prefix? "--enable-kernel=" flag))))
-                         ;; Evaluate 'original-configure-flags' in a
-                         ;; lexical environment that has a dummy
-                         ;; "linux-headers" input, to prevent errors.
-                         (let ((%build-inputs `(("linux-headers" . "@DUMMY@")
-                                                ,@%build-inputs)))
-                           ,original-configure-flags))))))
+                           (not (string-prefix? "--enable-kernel=" flag)))
+                         ,original-configure-flags)))))
     (synopsis "The GNU C Library (GNU Hurd variant)")
     (supported-systems %hurd-systems)))
 
@@ -723,7 +717,7 @@ with the Linux kernel.")
   "Return the glibc for TARGET, GLIBC/LINUX for a Linux host or
 GLIBC/HURD for a Hurd host"
   (match target
-    ("i586-pc-gnu" glibc/hurd)
+    ((or "i586-pc-gnu" "i586-gnu") glibc/hurd)
     (_ glibc/linux)))
 
 (define-syntax glibc
