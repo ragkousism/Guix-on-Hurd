@@ -559,7 +559,8 @@ mounted at FILE."
                        ("x86_64" 56)
                        ("mips64" 5055)
                        ("armv7l" 120)
-                       (_ #f))))
+                       ("i686-AT386" #f))))
+
     (lambda (flags)
       "Create a new child process by duplicating the current parent process.
 Unlike the fork system call, clone accepts FLAGS that specify which resources
