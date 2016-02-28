@@ -349,10 +349,14 @@
                                  #:guile %bootstrap-guile)))
 
 (define mig-boot0
-  (let ((mig (package (inherit mig)
-               (native-inputs `(("bison" ,bison-boot0)
-                                ("flex" ,flex-boot0)))
-               (inputs '()))))
+  (let* ((mig (package (inherit mig)
+                 (native-inputs `(("bison" ,bison-boot0)
+                                  ("flex" ,flex-boot0)))
+                 (inputs `(("flex" ,flex-boot0)))
+                 (arguments
+                  `(#:configure-flags
+                    `(,(string-append "LDFLAGS=-Wl,-rpath="
+                                      (assoc-ref %build-inputs "flex") "/lib/")))))))
     (package-with-bootstrap-guile
      (package-with-explicit-inputs mig %boot0-inputs
                                    (current-source-location)
