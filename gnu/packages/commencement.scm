@@ -290,18 +290,6 @@
                                   (current-source-location)
                                   #:guile %bootstrap-guile))))
 
-(define flex-boot0
-  ;; This Flex is needed to build MiG.
-  (let* ((flex (package (inherit flex)
-                 (native-inputs '())
-                 (propagated-inputs `(("m4" ,m4)))
-                 (inputs `(("indent" ,indent)))
-                 (arguments '(#:tests? #f)))))
-    (package-with-bootstrap-guile
-     (package-with-explicit-inputs flex %boot0-inputs
-                                   (current-source-location)
-                                   #:guile %bootstrap-guile))))
-
 (define bison-boot0
   ;; This Bison is needed to build MiG so we need it early in the process.
   ;; It is also needed to rebuild Bash's parser, which is modified by
@@ -327,6 +315,18 @@
                                               (current-source-location)
                                               #:guile %bootstrap-guile)))
       (native-inputs `(("perl" ,perl-boot0))))))
+
+(define flex-boot0
+  ;; This Flex is needed to build MiG.
+  (let* ((flex (package (inherit flex)
+                 (native-inputs `(("bison" ,bison-boot0)))
+                 (propagated-inputs `(("m4" ,m4)))
+                 (inputs `(("indent" ,indent)))
+                 (arguments '(#:tests? #f)))))
+    (package-with-bootstrap-guile
+     (package-with-explicit-inputs flex %boot0-inputs
+                                   (current-source-location)
+                                   #:guile %bootstrap-guile))))
 
 (define (linux-libre-headers-boot0)
   "Return Linux-Libre header files for the bootstrap environment."
