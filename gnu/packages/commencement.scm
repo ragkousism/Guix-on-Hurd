@@ -616,10 +616,14 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
     ;; references to GCC-BOOT0 and to the Linux headers.  XXX: Would be great
     ;; if 'allowed-references' were per-output.
     (arguments
-     `(#:allowed-references
-       ,(cons* `(,gcc-boot0 "lib") (kernel-headers-boot0)
-               static-bash-for-glibc
-               (package-outputs glibc-final-with-bootstrap-bash))
+     `(;; When building on Hurd the final libc contains references to the
+       ;; bootstrap binaries. Allow it for now.
+       ,@(if (string-prefix? "i586-gnu" (%current-system))
+           '()
+           `(#:allowed-references
+             ,(cons* `(,gcc-boot0 "lib") (kernel-headers-boot0)
+                     static-bash-for-glibc
+                     (package-outputs glibc-final-with-bootstrap-bash))))
 
        ,@(package-arguments glibc-final-with-bootstrap-bash)))))
 
