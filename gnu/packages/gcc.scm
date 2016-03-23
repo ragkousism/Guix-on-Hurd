@@ -101,6 +101,10 @@ where the OS part is overloaded to denote a specific ABI---into GCC
                      "--disable-multilib"
                      "--with-system-zlib"
 
+                     ;; Disable libcilkrts because it is not
+                     ;; ported to GNU/Hurd. 
+                     "--disable-libcilkrts"
+
                      ;; No pre-compiled libstdc++ headers, to save space.
                      "--disable-libstdcxx-pch"
 
