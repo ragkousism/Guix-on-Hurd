@@ -222,7 +222,13 @@ interactive means to merge two files.")
                                      "findutils-test-xargs.patch"))))
    (build-system gnu-build-system)
    (arguments
-    `(#:configure-flags (list
+    `(;; The latest version of Gnulib contains a test which fails on
+      ;; GNU/Hurd thus we disable it.  See
+      ;; <https://lists.gnu.org/archive/html/bug-gnulib/2016-01/msg00001.html>
+      ,@(if (string-prefix? "i586-gnu" (%current-system))
+          `(#:tests? #f)
+          '())
+      #:configure-flags (list
                          ;; Tell 'updatedb' to write to /var.
                          "--localstatedir=/var"
 
