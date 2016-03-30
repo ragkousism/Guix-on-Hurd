@@ -677,7 +677,8 @@ with the Linux kernel.")
                                   version "-hurd+libpthread-20151031" ".tar.gz"))
               (sha256
                (base32
-                "1mpq4d25xplnzwhbbrjjp8bx6idybkmmvhhhj877305xgn4sgvhf"))))
+                "1mpq4d25xplnzwhbbrjjp8bx6idybkmmvhhhj877305xgn4sgvhf"))
+              (patches (list (search-patch "glibc-hurd-time-precision.patch")))))
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
     ;; so both should be propagated.
