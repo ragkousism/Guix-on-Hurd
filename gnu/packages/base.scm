@@ -678,7 +678,10 @@ with the Linux kernel.")
               (sha256
                (base32
                 "1mpq4d25xplnzwhbbrjjp8bx6idybkmmvhhhj877305xgn4sgvhf"))
-              (patches (list (search-patch "glibc-hurd-time-precision.patch")))))
+              (patches (map search-patch
+                            `("glibc-hurd-time-precision.patch"
+                              "glibc-locale-incompatibility.patch"
+                              "glibc-versioned-locpath.patch")))))
 
     ;; Libc provides <hurd.h>, which includes a bunch of Hurd and Mach headers,
     ;; so both should be propagated.
