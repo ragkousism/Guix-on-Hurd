@@ -156,13 +156,6 @@ MODULES +=					\
 
 endif
 
-if BUILD_SYSCALLS_MODULE
-
-MODULES +=					\
-  guix/build/syscalls.scm
-
-endif
-
 if BUILD_DAEMON_OFFLOAD
 
 MODULES +=					\
@@ -369,13 +362,6 @@ EXTRA_DIST +=					\
   guix/scripts/offload.scm
 
 endif !BUILD_DAEMON_OFFLOAD
-
-if !BUILD_SYSCALLS_MODULE
-
-EXTRA_DIST +=					\
-  guix/build/syscalls.scm
-
-endif !BUILD_SYSCALLS_MODULE
 
 
 CLEANFILES =					\
