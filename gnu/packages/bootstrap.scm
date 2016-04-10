@@ -286,6 +286,7 @@ $out/bin/guile --version~%"
   ;; This is where the initial binaries come from.
   '("http://alpha.gnu.org/gnu/guix/bootstrap"
     "http://www.fdn.fr/~lcourtes/software/guix/packages"
+    "http://ftp.sceen.net/guix/"
     "ftp://83.212.114.59"
     "ftp://snf-656163.vm.okeanos.grnet.gr"))
 
