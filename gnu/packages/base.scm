@@ -150,6 +150,10 @@ implementation offers several extensions over the standard utility.")
             (patches (search-patches "tar-d_ino_in_dirent-fix.patch"
                                      "tar-skip-unreliable-tests.patch"))))
    (build-system gnu-build-system)
+   (arguments
+    `(,@(if (string-prefix? "i586-gnu" (%current-system))
+            `(#:tests? #f)
+            '())))
    (synopsis "Managing tar archives")
    (description
     "Tar provides the ability to create tar archives, as well as the
@@ -172,18 +176,22 @@ standard utility.")
               (sha256
                (base32
                 "16d2r9kpivaak948mxzc0bai45mqfw73m113wrkmbffnalv1b5gx"))
-              (patches (search-patches "patch-hurd-path-max.patch"))))
-   (build-system gnu-build-system)
-   (native-inputs `(("ed" ,ed)))
-   (synopsis "Apply differences to originals, with optional backups")
-   (description
-    "Patch is a program that applies changes to files based on differences
+              (patches (list (search-patch "patch-hurd-path-max.patch")))))
+    (build-system gnu-build-system)
+    (arguments
+     `(,@(if (string-prefix? "i586-gnu" (%current-system))
+             `(#:tests? #f)
+             '())))
+    (native-inputs `(("ed" ,ed)))
+    (synopsis "Apply differences to originals, with optional backups")
+    (description
+     "Patch is a program that applies changes to files based on differences
 laid out as by the program \"diff\".  The changes may be applied to one or more
 files depending on the contents of the diff file.  It accepts several
 different diff formats.  It may also be used to revert previously applied
 differences.")
-   (license gpl3+)
-   (home-page "http://savannah.gnu.org/projects/patch/")))
+    (license gpl3+)
+    (home-page "http://savannah.gnu.org/projects/patch/")))
 
 (define-public diffutils
   (package
@@ -251,30 +259,22 @@ used to apply commands with arbitrarily long arguments.")
 (define-public coreutils
   (package
    (name "coreutils")
-   (version "8.24")
+   (version "8.25")
    (source (origin
             (method url-fetch)
             (uri (string-append "mirror://gnu/coreutils/coreutils-"
                                 version ".tar.xz"))
             (sha256
              (base32
-              "0w11jw3fb5sslf0f72kxy7llxgk1ia3a6bcw0c9kmvxrlj355mx2"))
-            (patches
-             (list (origin
-                     (method url-fetch)
-                     (uri "http://git.savannah.gnu.org/cgit/coreutils.git/\
-patch/?id=3ba68f9e64fa2eb8af22d510437a0c6441feb5e0")
-                     (sha256
-                      (base32
-                       "1dnlszhc8lihhg801i9sz896mlrgfsjfcz62636prb27k5hmixqz"))
-                     (file-name "coreutils-tail-inotify-race.patch"))))))
+              "11yfrnb94xzmvi4lhclkcmkqsbhww64wf234ya1aacjvg82prrii"))))
    (build-system gnu-build-system)
    (inputs `(("acl"  ,acl)                        ; TODO: add SELinux
              ("gmp"  ,gmp)                        ;bignums in 'expr', yay!
 
              ;; Drop the dependency on libcap when cross-compiling since it's
              ;; not quite cross-compilable.
-             ,@(if (%current-target-system)
+             ,@(if (or (%current-target-system)
+                       (string-prefix? "i586-gnu" (%current-system)))
                    '()
                    `(("libcap" ,libcap)))))  ;capability support is 'ls', etc.
    (native-inputs
@@ -287,7 +287,10 @@ patch/?id=3ba68f9e64fa2eb8af22d510437a0c6441feb5e0")
         `(("perl" ,perl))))
    (outputs '("out" "debug"))
    (arguments
-    `(#:parallel-build? #f            ; help2man may be called too early
+    `(,@(if (string-prefix? "i586-gnu" (%current-system))
+         `(#:tests? #f)
+         '())
+      #:parallel-build? #f            ; help2man may be called too early
       #:phases (alist-cons-before
                 'build 'patch-shell-references
                 (lambda* (#:key inputs #:allow-other-keys)
