@@ -102,6 +102,7 @@ MODULES =					\
   guix/build/cvs.scm				\
   guix/build/svn.scm				\
   guix/build/syscalls.scm                       \
+  guix/build/syscalls-tools.scm                 \
   guix/build/gremlin.scm			\
   guix/build/emacs-utils.scm			\
   guix/build/graft.scm				\

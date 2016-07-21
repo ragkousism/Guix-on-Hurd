@@ -28,6 +28,7 @@
   #:use-module (ice-9 regex)
   #:use-module (ice-9 match)
   #:use-module (ice-9 ftw)
+  #:use-module (guix build syscalls-tools)
   #:export (errno
             MS_RDONLY
             MS_NOSUID
@@ -131,150 +132,6 @@
 ;;; Guile, we instead apply 'guile-linux-syscalls.patch'.)
 ;;;
 ;;; Code:
-
-
-;;;
-;;; Packed structures.
-;;;
-
-(define-syntax sizeof*
-  ;; XXX: This duplicates 'compile-time-value'.
-  (syntax-rules (int128 array)
-    ((_ int128)
-     16)
-    ((_ (array type n))
-     (* (sizeof* type) n))
-    ((_ type)
-     (let-syntax ((v (lambda (s)
-                       (let ((val (sizeof type)))
-                         (syntax-case s ()
-                           (_ val))))))
-       v))))
-
-(define-syntax alignof*
-  ;; XXX: This duplicates 'compile-time-value'.
-  (syntax-rules (int128 array)
-    ((_ int128)
-     16)
-    ((_ (array type n))
-     (alignof* type))
-    ((_ type)
-     (let-syntax ((v (lambda (s)
-                       (let ((val (alignof type)))
-                         (syntax-case s ()
-                           (_ val))))))
-       v))))
-
-(define-syntax align                             ;as found in (system foreign)
-  (syntax-rules (~)
-    "Add to OFFSET whatever it takes to get proper alignment for TYPE."
-    ((_ offset (type ~ endianness))
-     (align offset type))
-    ((_ offset type)
-     (1+ (logior (1- offset) (1- (alignof* type)))))))
-
-(define-syntax type-size
-  (syntax-rules (~)
-    ((_ (type ~ order))
-     (sizeof* type))
-    ((_ type)
-     (sizeof* type))))
-
-(define-syntax struct-alignment
-  (syntax-rules ()
-    "Compute the alignment for the aggregate made of TYPES at OFFSET.  The
-result is the alignment of the \"most strictly aligned component\"."
-    ((_ offset types ...)
-     (max (align offset types) ...))))
-
-(define-syntax struct-size
-  (syntax-rules ()
-    "Return the size in bytes of the structure made of TYPES."
-    ((_ offset (types-processed ...))
-     ;; The SysV ABI P.S. says: "Aggregates (structures and arrays) and unions
-     ;; assume the alignment of their most strictly aligned component."  As an
-     ;; example, a struct such as "int32, int16" has size 8, not 6.
-     (1+ (logior (1- offset)
-                 (1- (struct-alignment offset types-processed ...)))))
-    ((_ offset (types-processed ...) type0 types ...)
-     (struct-size (+ (type-size type0) (align offset type0))
-                  (type0 types-processed ...)
-                  types ...))))
-
-(define-syntax write-type
-  (syntax-rules (~ array)
-    ((_ bv offset (type ~ order) value)
-     (bytevector-uint-set! bv offset value
-                           (endianness order) (sizeof* type)))
-    ((_ bv offset (array type n) value)
-     (let loop ((i 0)
-                (value value)
-                (o offset))
-       (unless (= i n)
-         (match value
-           ((head . tail)
-            (write-type bv o type head)
-            (loop (+ 1 i) tail (+ o (sizeof* type))))))))
-    ((_ bv offset type value)
-     (bytevector-uint-set! bv offset value
-                           (native-endianness) (sizeof* type)))))
-
-(define-syntax write-types
-  (syntax-rules ()
-    ((_ bv offset () ())
-     #t)
-    ((_ bv offset (type0 types ...) (field0 fields ...))
-     (begin
-       (write-type bv (align offset type0) type0 field0)
-       (write-types bv
-                    (+ (align offset type0) (type-size type0))
-                    (types ...) (fields ...))))))
-
-(define-syntax read-type
-  (syntax-rules (~ array quote *)
-    ((_ bv offset '*)
-     (make-pointer (bytevector-uint-ref bv offset
-                                        (native-endianness)
-                                        (sizeof* '*))))
-    ((_ bv offset (type ~ order))
-     (bytevector-uint-ref bv offset
-                          (endianness order) (sizeof* type)))
-    ((_ bv offset (array type n))
-     (unfold (lambda (i) (= i n))
-             (lambda (i)
-               (read-type bv (+ offset (* i (sizeof* type))) type))
-             1+
-             0))
-    ((_ bv offset type)
-     (bytevector-uint-ref bv offset
-                          (native-endianness) (sizeof* type)))))
-
-(define-syntax read-types
-  (syntax-rules ()
-    ((_ return bv offset () (values ...))
-     (return values ...))
-    ((_ return bv offset (type0 types ...) (values ...))
-     (read-types return
-                 bv
-                 (+ (align offset type0) (type-size type0))
-                 (types ...)
-                 (values ... (read-type bv
-                                        (align offset type0)
-                                        type0))))))
-
-(define-syntax define-c-struct
-  (syntax-rules ()
-    "Define SIZE as the size in bytes of the C structure made of FIELDS.  READ
-as a deserializer and WRITE! as a serializer for the C structure with the
-given TYPES.  READ uses WRAP-FIELDS to return its value."
-    ((_ name size wrap-fields read write! (fields types) ...)
-     (begin
-       (define size
-         (struct-size 0 () types ...))
-       (define (write! bv offset fields ...)
-         (write-types bv offset (types ...) (fields ...)))
-       (define* (read bv #:optional (offset 0))
-         (read-types wrap-fields bv offset (types ...) ()))))))
 
 
 ;;;
