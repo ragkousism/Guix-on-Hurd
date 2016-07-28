@@ -53,6 +53,7 @@ libformat_a_CPPFLAGS =				\
 libutil_a_SOURCES =				\
   %D%/libutil/archive.cc			\
   %D%/libutil/affinity.cc			\
+  %D%/libutil/calls.cc				\
   %D%/libutil/serialise.cc			\
   %D%/libutil/util.cc				\
   %D%/libutil/hash.cc				\
@@ -66,6 +67,7 @@ libutil_headers =				\
   %D%/libutil/archive.hh			\
   %D%/libutil/types.hh				\
   %D%/libutil/gcrypt-hash.hh			\
+  %D%/libutil/calls.hh  			\
   %D%/libutil/md5.h				\
   %D%/libutil/sha1.h				\
   %D%/libutil/sha256.h				\

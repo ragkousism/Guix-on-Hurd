@@ -8,6 +8,7 @@
 #include "util.hh"
 #include "archive.hh"
 #include "affinity.hh"
+#include "calls.hh"
 
 #include <map>
 #include <sstream>
@@ -34,9 +35,6 @@
 /* Includes required for chroot support. */
 #if HAVE_SYS_PARAM_H
 #include <sys/param.h>
-#endif
-#if HAVE_SYS_MOUNT_H
-#include <sys/mount.h>
 #endif
 #if HAVE_SYS_SYSCALL_H
 #include <sys/syscall.h>
@@ -2085,13 +2083,13 @@ void DerivationGoal::runChild()
             foreach (Strings::iterator, i, mounts) {
                 vector<string> fields = tokenizeString<vector<string> >(*i, " ");
                 string fs = decodeOctalEscaped(fields.at(4));
-                if (mount(0, fs.c_str(), 0, MS_PRIVATE, 0) == -1)
+                if (nixMount(0, fs.c_str(), 0, MS_PRIVATE, 0) == -1)
                     throw SysError(format("unable to make filesystem `%1%' private") % fs);
             }
 
             /* Bind-mount chroot directory to itself, to treat it as a
                different filesystem from /, as needed for pivot_root. */
-            if (mount(chrootRootDir.c_str(), chrootRootDir.c_str(), 0, MS_BIND, 0) == -1)
+            if (nixMount(chrootRootDir.c_str(), chrootRootDir.c_str(), 0, MS_BIND, 0) == -1)
                 throw SysError(format("unable to bind mount ‘%1%’") % chrootRootDir);
 
             /* Set up a nearly empty /dev, unless the user asked to
@@ -2145,19 +2143,19 @@ void DerivationGoal::runChild()
                     createDirs(dirOf(target));
                     writeFile(target, "");
                 }
-                if (mount(source.c_str(), target.c_str(), "", MS_BIND, 0) == -1)
+                if (nixMount(source.c_str(), target.c_str(), "", MS_BIND, 0) == -1)
                     throw SysError(format("bind mount from `%1%' to `%2%' failed") % source % target);
             }
 
             /* Bind a new instance of procfs on /proc to reflect our
                private PID namespace. */
             createDirs(chrootRootDir + "/proc");
-            if (mount("none", (chrootRootDir + "/proc").c_str(), "proc", 0, 0) == -1)
+            if (nixMount("none", (chrootRootDir + "/proc").c_str(), "proc", 0, 0) == -1)
                 throw SysError("mounting /proc");
 
             /* Mount a new tmpfs on /dev/shm to ensure that whatever
                the builder puts in /dev/shm is cleaned up automatically. */
-            if (pathExists("/dev/shm") && mount("none", (chrootRootDir + "/dev/shm").c_str(), "tmpfs", 0, 0) == -1)
+            if (pathExists("/dev/shm") && nixMount("none", (chrootRootDir + "/dev/shm").c_str(), "tmpfs", 0, 0) == -1)
                 throw SysError("mounting /dev/shm");
 
             /* Mount a new devpts on /dev/pts.  Note that this
@@ -2168,7 +2166,7 @@ void DerivationGoal::runChild()
                 !pathExists(chrootRootDir + "/dev/ptmx")
                 && dirsInChroot.find("/dev/pts") == dirsInChroot.end())
             {
-                if (mount("none", (chrootRootDir + "/dev/pts").c_str(), "devpts", 0, "newinstance,mode=0620") == -1)
+                if (nixMount("none", (chrootRootDir + "/dev/pts").c_str(), "devpts", 0, "newinstance,mode=0620") == -1)
                     throw SysError("mounting /dev/pts");
                 createSymlink("/dev/pts/ptmx", chrootRootDir + "/dev/ptmx");
 
@@ -2190,7 +2188,7 @@ void DerivationGoal::runChild()
             if (chroot(".") == -1)
                 throw SysError(format("cannot change root directory to '%1%'") % chrootRootDir);
 
-            if (umount2("real-root", MNT_DETACH) == -1)
+            if (nixUmount2("real-root", MNT_DETACH) == -1)
                 throw SysError("cannot unmount real root filesystem");
 
             if (rmdir("real-root") == -1)

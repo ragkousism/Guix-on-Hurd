@@ -6,6 +6,7 @@
 #include "worker-protocol.hh"
 #include "derivations.hh"
 #include "affinity.hh"
+#include "calls.hh"
 
 #include <iostream>
 #include <algorithm>
@@ -512,7 +513,7 @@ void LocalStore::makeStoreWritable()
         if (unshare(CLONE_NEWNS) == -1)
             throw SysError("setting up a private mount namespace");
 
-        if (mount(0, settings.nixStore.c_str(), "none", MS_REMOUNT | MS_BIND, 0) == -1)
+        if (nixMount(0, settings.nixStore.c_str(), "none", MS_REMOUNT | MS_BIND, 0) == -1)
             throw SysError(format("remounting %1% writable") % settings.nixStore);
     }
 #endif
