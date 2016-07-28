@@ -53,6 +53,7 @@ libformat_a_CPPFLAGS =				\
 libutil_a_SOURCES =				\
   %D%/libutil/archive.cc			\
   %D%/libutil/affinity.cc			\
+  %D%/libutil/calls.cc				\
   %D%/libutil/serialise.cc			\
   %D%/libutil/util.cc				\
   %D%/libutil/hash.cc				\
@@ -66,6 +67,7 @@ libutil_headers =				\
   %D%/libutil/archive.hh			\
   %D%/libutil/types.hh				\
   %D%/libutil/gcrypt-hash.hh			\
+  %D%/libutil/calls.hh  			\
   %D%/libutil/md5.h				\
   %D%/libutil/sha1.h				\
   %D%/libutil/sha256.h				\
@@ -132,8 +134,8 @@ guix_daemon_CPPFLAGS =				\
   -I$(top_srcdir)/%D%/libstore
 
 guix_daemon_LDADD =				\
-  libstore.a libutil.a libformat.a -lbz2	\
-  $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS)
+  libstore.a libutil.a libformat.a -lbz2 \
+  $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(HURD_LDFLAGS)
 
 guix_daemon_headers =				\
   %D%/nix-daemon/shared.hh
@@ -150,7 +152,7 @@ guix_register_CPPFLAGS =			\
 # XXX: Should we start using shared libs?
 guix_register_LDADD =				\
   libstore.a libutil.a libformat.a -lbz2	\
-  $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS)
+  $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(HURD_LDFLAGS)
 
 
 noinst_HEADERS =						\

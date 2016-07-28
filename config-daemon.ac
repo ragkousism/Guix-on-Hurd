@@ -49,8 +49,18 @@ if test "x$guix_build_daemon" = "xyes"; then
       ;;
   esac
 
+  case "$guix_system" in
+    i586-gnu)
+      HURD_LDFLAGS="-lfshelp -lhurdutil"
+      ;;
+    *)
+      HURD_LDFLAGS=""
+      ;;
+  esac
+
   AC_SUBST([LIBGCRYPT_CFLAGS])
   AC_SUBST([LIBGCRYPT_LIBS])
+  AC_SUBST([HURD_LDFLAGS])
 
   save_CFLAGS="$CFLAGS"
   save_LDFLAGS="$LDFLAGS"
@@ -110,6 +120,9 @@ if test "x$guix_build_daemon" = "xyes"; then
 
   dnl Check for <linux/fs.h> (for immutable file support).
   AC_CHECK_HEADERS([linux/fs.h])
+
+  dnl Check for <hurd/libhurdutil.h> for settrans support on GNU/Hurd.
+  AC_CHECK_HEADERS([hurd/hurdutil.h])
 
   dnl Determine the appropriate default list of substitute URLs.
   GUILE_MODULE_AVAILABLE([have_gnutls], [(gnutls)])
