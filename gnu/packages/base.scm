@@ -689,7 +689,8 @@ with the Linux kernel.")
            (lambda _
              ;; Use the right 'pwd'.
              (substitute* "configure"
-               (("/bin/pwd") "pwd")))
+               (("/bin/pwd") "pwd"))
+             (setenv "LDLIBS-pthread.so" "-lihash -lmachuser -lhurduser"))
           ,original-phases)))
         ((#:configure-flags original-configure-flags)
         `(append (list "--host=i586-pc-gnu"
