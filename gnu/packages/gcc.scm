@@ -63,6 +63,9 @@ where the OS part is overloaded to denote a specific ABI---into GCC
            "--with-mode=thumb"
            "--with-fpu=neon"))
 
+        ((string-match "i?86-(pc|)-gnu$" target)
+         '("--disable-libcilkrts"))
+
         (else
          ;; TODO: Add `arm.*-gnueabi', etc.
          '())))
