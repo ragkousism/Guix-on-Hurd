@@ -110,6 +110,9 @@ if test "x$guix_build_daemon" = "xyes"; then
   dnl Check for <linux/fs.h> (for immutable file support).
   AC_CHECK_HEADERS([linux/fs.h])
 
+  dnl Check for <hurd/libhurdutil.h> for settrans support on GNU/Hurd.
+  AC_CHECK_HEADERS([hurd/hurdutil.h])
+
   dnl Determine the appropriate default list of substitute URLs.
   GUILE_MODULE_AVAILABLE([have_gnutls], [(gnutls)])
   if test "x$have_gnutls" = "xyes"; then
