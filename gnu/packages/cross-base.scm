@@ -333,7 +333,9 @@ GCC that does not target a libc; otherwise, target that libc."
                        ,@(package-native-inputs gnumach-headers)))))
 
   (define xmig
-    (package (inherit mig)
+    (package (inherit (package-with-patch mig
+                                          (search-patch
+                                           "mig-libc-headers.patch")))
       (name (string-append "mig-cross"))
       (arguments
        `(#:modules ((guix build gnu-build-system)
@@ -343,7 +345,7 @@ GCC that does not target a libc; otherwise, target that libc."
                    'configure 'set-cross-headers-path
                    (lambda* (#:key inputs #:allow-other-keys)
                      (let* ((mach (assoc-ref inputs "cross-gnumach-headers"))
-                            (cpath (string-append mach "/include")))
+                            (cpath (string-append mach "/include:" "include")))
                        (for-each (cut setenv <> cpath)
                                  '("CROSS_C_INCLUDE_PATH"
                                    "CROSS_CPLUS_INCLUDE_PATH"
