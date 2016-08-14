@@ -32,14 +32,15 @@
 (define flex
   (package
     (name "flex")
-    (version "2.6.0")
+    (version "2.5.37")
     (source (origin
              (method url-fetch)
              (uri (string-append "mirror://sourceforge/flex/flex-"
                                  version ".tar.bz2"))
              (sha256
               (base32
-               "1sdqx63yadindzafrq1w31ajblf9gl1c301g068s20s7bbpi3ri4"))))
+               "0ah5mi4j62b85a9rllv1004mzjb5cd0mn4glvz13p88rpx77pahp"))
+             (patches (list (search-patch "flex-bison-tests.patch")))))
     (build-system gnu-build-system)
     (inputs
      (let ((bison-for-tests
