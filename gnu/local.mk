@@ -979,6 +979,7 @@ bootstrap_x86_64_linuxdir = $(bootstrapdir)/x86_64-linux
 bootstrap_i686_linuxdir = $(bootstrapdir)/i686-linux
 bootstrap_armhf_linuxdir = $(bootstrapdir)/armhf-linux
 bootstrap_mips64el_linuxdir = $(bootstrapdir)/mips64el-linux
+bootstrap_i586_gnudir = $(bootstrapdir)/i586-gnu
 
 dist_bootstrap_x86_64_linux_DATA =		\
   %D%/packages/bootstrap/x86_64-linux/bash	\
@@ -1004,6 +1005,12 @@ dist_bootstrap_mips64el_linux_DATA =		\
   %D%/packages/bootstrap/mips64el-linux/tar	\
   %D%/packages/bootstrap/mips64el-linux/xz
 
+dist_bootstrap_i586_gnu_DATA =		\
+%D%/packages/bootstrap/i586-gnu/bash	\
+%D%/packages/bootstrap/i586-gnu/mkdir	\
+%D%/packages/bootstrap/i586-gnu/tar	\
+%D%/packages/bootstrap/i586-gnu/xz
+
 # Big bootstrap binaries are not included in the tarball.  Instead, they
 # are downloaded.
 nodist_bootstrap_x86_64_linux_DATA =					\
@@ -1014,6 +1021,8 @@ nodist_bootstrap_armhf_linux_DATA =					\
   %D%/packages/bootstrap/armhf-linux/guile-2.0.11.tar.xz
 nodist_bootstrap_mips64el_linux_DATA =					\
   %D%/packages/bootstrap/mips64el-linux/guile-2.0.9.tar.xz
+nodist_bootstrap_i586_gnu_DATA =					\
+%D%/packages/bootstrap/i586-gnu/guile-2.0.12.tar.xz
 
 # Those files must remain executable, so they remain executable once
 # imported into the store.
