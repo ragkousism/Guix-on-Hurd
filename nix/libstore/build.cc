@@ -1822,7 +1822,7 @@ void DerivationGoal::startBuilder()
     }
 
     if (useChroot) {
-#if CHROOT_ENABLED
+#if 1
         /* Create a temporary directory in which we set up the chroot
            environment using bind-mounts.  We put it in the Nix store
            to ensure that we can create hard-links to non-directory

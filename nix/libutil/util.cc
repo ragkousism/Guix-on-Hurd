@@ -847,15 +847,15 @@ void killUser(uid_t uid)
 #endif
             if (errno == ESRCH) break; /* no more processes */
             if (errno != EINTR)
-                throw SysError(format("cannot kill processes for uid `%1%'") % uid);
+                throw SysError(format("1: cannot kill processes for uid `%1%'") % uid);
         }
 
         _exit(0);
     });
 
-    int status = pid.wait(true);
-    if (status != 0)
-        throw Error(format("cannot kill processes for uid `%1%': %2%") % uid % statusToString(status));
+    // int status = pid.wait(true);
+    // if (status != 0)
+    //     throw Error(format("2: cannot kill processes for uid `%1%': %2%") % uid % statusToString(status));
 
     /* !!! We should really do some check to make sure that there are
        no processes left running under `uid', but there is no portable
