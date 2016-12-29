@@ -441,7 +441,7 @@ $out/bin/guile --version~%"
                           "0k97a3whzx3apsi9n2cbsrr79ad6lh00klxph9hw4fqyp1abkdsg"))
                         ("i586-gnu"
                          (base32
-                          "0qd1gy1gdc1bdyzf6xf0ppjs2wa93hxa24dpwpfj6h2fpcwz5mqb")))))))))
+                          "14bvq3b6rf7k50c0m7fdiil760gl1zvn6jhs8kyvrl3vnik24b6b")))))))))
     (synopsis "Bootstrap binaries and headers of the GNU C Library")
     (description synopsis)
     (home-page #f)
@@ -504,7 +504,7 @@ exec ~a/bin/.gcc-wrapped -B~a/lib \
                                       ("armhf-linux"
                                        "/20150101/gcc-4.8.4.tar.xz")
                                       ("i586-gnu"
-                                       "/2016/gcc-4.9.4.tar.xz")
+                                       "/2016/gcc-5.4.0.tar.xz")
                                       (_
                                        "/20131110/gcc-4.8.2.tar.xz")))
                                %bootstrap-base-urls))
@@ -524,7 +524,7 @@ exec ~a/bin/.gcc-wrapped -B~a/lib \
                           "1m5miqkyng45l745n0sfafdpjkqv9225xf44jqkygwsipj2cv9ks"))
                         ("i586-gnu"
                          (base32
-                          "0746p2305czf27bkqw8w30sf52sai178a7l4n73r3cnsw180s8sw")))))))))
+                          "1qd266laf8c07lz0cddg9h998bbmi5qmyfvvxnijkdmy8zg2yghg")))))))))
     (native-search-paths
      (list (search-path-specification
             (variable "CPATH")
