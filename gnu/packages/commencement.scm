@@ -41,6 +41,7 @@
   #:use-module (gnu packages hurd)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages man)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix build-system gnu)
@@ -347,7 +348,8 @@
 (define flex-boot0
   ;; This Flex is needed to build MiG.
   (let* ((flex (package (inherit flex)
-                 (native-inputs `(("bison" ,bison-boot0)))
+                 (native-inputs `(("bison" ,bison-boot0)
+                                  ("help2man" ,help2man)))
                  (propagated-inputs `(("m4" ,m4)))
                  (inputs `(("indent" ,indent)))
                  (arguments '(#:tests? #f)))))
