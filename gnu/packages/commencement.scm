@@ -649,10 +649,10 @@ exec ~a/bin/~a-~a -B~a/lib -Wl,-dynamic-linker -Wl,~a/~a \"$@\"~%"
     ;; references to GCC-BOOT0 and to the Linux headers.  XXX: Would be great
     ;; if 'allowed-references' were per-output.
     (arguments
-     `(#:allowed-references
-       ,(cons* `(,gcc-boot0 "lib") (kernel-headers-boot0)
-               static-bash-for-glibc
-               (package-outputs glibc-final-with-bootstrap-bash))
+     `(;; #:allowed-references
+       ;; ,(cons* `(,gcc-boot0 "lib") (kernel-headers-boot0)
+       ;;         static-bash-for-glibc
+       ;;         (package-outputs glibc-final-with-bootstrap-bash))
 
        ,@(package-arguments glibc-final-with-bootstrap-bash)))))
 
