@@ -106,6 +106,8 @@ where the OS part is overloaded to denote a specific ABI---into GCC
                      ;; No pre-compiled libstdc++ headers, to save space.
                      "--disable-libstdcxx-pch"
 
+                     "--disable-libcilkrts"
+
                      "--with-local-prefix=/no-gcc-local-prefix"
 
                      ;; With a separate "lib" output, the build system
