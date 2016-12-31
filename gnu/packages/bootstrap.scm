@@ -333,11 +333,11 @@ $out/bin/guile --version~%"
                            (patch-shebang "bin/egrep" path)
                            (patch-shebang "bin/fgrep" path)
                            (substitute* "bin/egrep"
-                             (("/[^ ]+/-grep-2.25/bin/grep")
-                              (string-append out "bin/grep")))
+                             (("/[^ ]+/bin/grep")
+                              (string-append out "/bin/grep")))
                            (substitute* "bin/fgrep"
-                             (("/[^ ]+/-grep-2.25/bin/grep")
-                              (string-append out "bin/grep")))
+                             (("/[^ ]+/bin/grep")
+                              (string-append out "/bin/grep")))
                            (chmod "bin" #o555)
                            #t)))
 
@@ -441,7 +441,7 @@ $out/bin/guile --version~%"
                           "0k97a3whzx3apsi9n2cbsrr79ad6lh00klxph9hw4fqyp1abkdsg"))
                         ("i586-gnu"
                          (base32
-                          "14bvq3b6rf7k50c0m7fdiil760gl1zvn6jhs8kyvrl3vnik24b6b")))))))))
+                          "1j750gasxv8cf61n5qqf624k365cq7k8774vsis32l0d047l6fmk")))))))))
     (synopsis "Bootstrap binaries and headers of the GNU C Library")
     (description synopsis)
     (home-page #f)
