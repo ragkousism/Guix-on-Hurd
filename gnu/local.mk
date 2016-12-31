@@ -552,6 +552,7 @@ dist_patch_DATA =						\
   %D%/packages/patches/fcgi-2.4.0-poll.patch			\
   %D%/packages/patches/findutils-localstatedir.patch		\
   %D%/packages/patches/findutils-test-xargs.patch		\
+  %D%/packages/patches/flex-hurd-path-max.patch         \
   %D%/packages/patches/flint-ldconfig.patch			\
   %D%/packages/patches/fltk-shared-lib-defines.patch		\
   %D%/packages/patches/fltk-xfont-on-demand.patch		\

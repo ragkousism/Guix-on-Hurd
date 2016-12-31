@@ -21,6 +21,7 @@
   #:use-module (guix licenses)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix utils)
   #:use-module (guix build-system gnu)
   #:use-module (gnu packages)
   #:use-module (gnu packages m4)
@@ -41,7 +42,8 @@
                     "flex-" version ".tar.gz"))
               (sha256
                (base32
-                "1jdjghh1qjq3z7snphshcak6p07gch2n4215vjvrkism25x460cs"))))
+                "1jdjghh1qjq3z7snphshcak6p07gch2n4215vjvrkism25x460cs"))
+              (patches (search-patches "flex-hurd-path-max.patch"))))
     (build-system gnu-build-system)
     (inputs
      (let ((bison-for-tests
