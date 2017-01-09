@@ -28,14 +28,14 @@
 (define-public libgc
   (package
    (name "libgc")
-   (version "7.6.0")
+   (version "7.4.2")
    (source (origin
             (method url-fetch)
             (uri (string-append "http://www.hboehm.info/gc/gc_source/gc-"
                                 version ".tar.gz"))
             (sha256
              (base32
-              "143x7g0d0k6250ai6m2x3l4y352mzizi4wbgrmahxscv2aqjhjm1"))))
+              "18mg28rr6kwr5clc65k4l4hkyy4kd16amx831sjf8q2lqkbhlck3"))))
    (build-system gnu-build-system)
    (arguments
     '(#:configure-flags '(;; Install gc_cpp.h et al.
