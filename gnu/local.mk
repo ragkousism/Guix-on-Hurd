@@ -590,8 +590,10 @@ dist_patch_DATA =						\
   %D%/packages/patches/glib-networking-ssl-cert-file.patch	\
   %D%/packages/patches/glib-tests-timer.patch			\
   %D%/packages/patches/glibc-bootstrap-system.patch		\
+  %D%/packages/patches/glibc-hurd-clock_t_centiseconds.patch    \
   %D%/packages/patches/glibc-ldd-x86_64.patch			\
   %D%/packages/patches/glibc-locales.patch			\
+  %D%/packages/patches/glibc-locale-incompatibility.patch   \
   %D%/packages/patches/glibc-o-largefile.patch			\
   %D%/packages/patches/glibc-versioned-locpath.patch		\
   %D%/packages/patches/gmp-arm-asm-nothumb.patch		\
