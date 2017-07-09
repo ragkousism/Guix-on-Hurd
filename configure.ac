@@ -93,14 +93,7 @@ guileobjectdir="${libdir}/guile/$GUILE_EFFECTIVE_VERSION/site-ccache"
 AC_SUBST([guilemoduledir])
 AC_SUBST([guileobjectdir])
 
-dnl The GnuTLS bindings are necessary for substitutes over HTTPS and for 'guix
-dnl pull', among other things.
-GUILE_MODULE_AVAILABLE([have_gnutls], [(gnutls)])
-if test "x$have_gnutls" != "xyes"; then
-  AC_MSG_ERROR([The Guile bindings of GnuTLS are missing; please install them.])
-fi
-
-dnl Guile-JSON is used in various places.
+dnl guile-json is used for the PyPI package importer
 GUILE_MODULE_AVAILABLE([have_guile_json], [(json)])
 AM_CONDITIONAL([HAVE_GUILE_JSON], [test "x$have_guile_json" = "xyes"])
 
